@@ -1,0 +1,142 @@
+these are in unity,enjoy! im giving all rights for these codes to the public:
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject endgameText;
+    public Text leaderboardText;
+    public Text moneyText;
+    public Text btkText;
+    public Text gasText;
+    public Text oilText;
+    public GameObject shopMenu;
+    public GameObject loginMenu;
+    public GameObject adminPanel;
+    public InputField usernameInput;
+    public InputField passwordInput;
+    public InputField codeInput;
+    public Dropdown graphicsDropdown;
+    public Text gasPriceText;
+    public Text oilPriceText;
+    public GameObject playerCar;
+    public float money = 0f;
+    private float totalDistance = 0f;
+    private float startTime;
+    private bool gameEnded = false;
+    private Vector3 lastGasStationPosition;
+    private float lastGasStationMoney;
+    private float lastGasStationFuel;
+    private float lastGasStationOil;
+    private bool isOutOfGas = false;
+    private bool isOutOfOil = false;
+    private bool isAdmin = false;
+    private bool isCodeValid = false;
+
+    public float moneyPerMile = 0.02f;
+    public float gasPricePerGallon = 1f;
+    public float oilPrice = 2.99f;
+    public float carSpeed = 60f;
+    public float carFuelCapacity = 200f;
+    public float carOilCapacity = 5f;
+    public float carFuelConsumptionRate = 1f;
+    public float carOilConsumptionRate = 0.01f;
+    public float carPrice = 100f;
+
+    private void Start()
+    {
+        loginMenu.SetActive(true);
+        Time.timeScale = 0; // Pause the game until the player logs in
+        graphicsDropdown.onValueChanged.AddListener(delegate { SetGraphicsQuality(graphicsDropdown.value); });
+    }
+
+    private void Update()
+    {
+        if (!gameEnded)
+        {
+            float elapsedTime = Time.time - startTime;
+            int hours = Mathf.FloorToInt(elapsedTime / 3600);
+            int minutes = Mathf.FloorToInt((elapsedTime % 3600) / 60);
+            int seconds = Mathf.FloorToInt(elapsedTime % 60);
+            string timeText = hours.ToString("00") + ":" + minutes.ToString("00") + ":" + seconds.ToString("00");
+            leaderboardText.text = "Time: " + timeText;
+
+            // Earn BTK by playing
+            int btkEarned = Mathf.FloorToInt(elapsedTime / 3600) * 10; // Earn 10 BTK every hour
+            PlayerPrefs.SetInt("BTK", PlayerPrefs.GetInt("BTK", 0) + btkEarned);
+            btkText.text = "BTK: " + PlayerPrefs.GetInt("BTK", 0);
+        }
+    }
+
+    public void EndGame(string reason)
+    {
+        gameEnded = true;
+        // Display endgame text with the reason for death
+        endgameText.SetActive(true);
+        endgameText.GetComponent<Text>().text = "Game Over - " + reason;
+        // Save score to leaderboard
+        SaveScore();
+        // Restart the game
+        // RestartGame(); // If you want to restart the game after displaying the endgame text
+    }
+
+    private void SaveScore()
+    {
+        // You can save the time to a leaderboard here
+        // Example: leaderboardText.text = "Time: " + timeText;
+    }
+
+    private void RestartGame()
+    {
+        // Reload the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void UpdateMoneyEarned(float distance)
+    {
+        // Calculate money earned based on distance
+        money += distance * moneyPerMile;
+        moneyText.text = "Money: $" + money.ToString("F2");
+    }
+
+    public void UpdateTotalDistance(float distance)
+    {
+        // Update total distance traveled
+        totalDistance += distance;
+    }
+
+    public void OpenShopMenu()
+    {
+        shopMenu.SetActive(true);
+    }
+
+    public void CloseShopMenu()
+    {
+        shopMenu.SetActive(false);
+    }
+
+    public void SetGraphicsQuality(int qualityIndex)
+    {
+        // Set graphics quality based on dropdown selection
+        QualitySettings.SetQualityLevel(qualityIndex);
+    }
+
+    public void BuyCar()
+    {
+        int btk = PlayerPrefs.GetInt("BTK", 0);
+        if (btk >= carPrice)
+        {
+            // Deduct BTK and grant car upgrades
+            PlayerPrefs.SetInt("BTK", btk - Mathf.FloorToInt(carPrice));
+            btkText.text = "BTK: " + PlayerPrefs.GetInt("BTK", 0);
+            playerCar.GetComponent<PlayerController>().speed = carSpeed;
+            playerCar.GetComponent<PlayerController>().fuelCapacity = carFuelCapacity;
+            playerCar.GetComponent<PlayerController>().oilCapacity = carOilCapacity;
+            playerCar.GetComponent<PlayerController>().fuelConsumptionRate = carFuelConsumptionRate;
+            playerCar.GetComponent<PlayerController>().oilConsumptionRate = carOilConsumptionRate;
+        }
+    }
+
+    public void BuyGasCapacity
